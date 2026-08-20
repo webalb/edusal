@@ -27,6 +27,8 @@ from nexus.institutions.models import (
     PricingPlan,
     InstitutionInvoice,
     InvoiceStatus,
+    LearningResource,
+    LearningResourceType,
 )
 
 User = get_user_model()
@@ -209,6 +211,72 @@ class DocumentUploadSerializer(serializers.Serializer):
     doc_type = serializers.CharField(required=True, max_length=30)
     file = serializers.FileField(required=False, allow_null=True)
     raw_text = serializers.CharField(required=False, allow_blank=True)
+
+
+class LearningResourceSerializer(serializers.ModelSerializer):
+    resource_type_display = serializers.CharField(source="get_resource_type_display", read_only=True)
+    division_name = serializers.CharField(source="division.name", read_only=True)
+    department_name = serializers.CharField(source="department.name", read_only=True)
+    session_label = serializers.CharField(source="session.session_label", read_only=True)
+    file_url = serializers.SerializerMethodField()
+    youtube_video_id = serializers.SerializerMethodField()
+    youtube_embed_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LearningResource
+        fields = [
+            "id",
+            "institution",
+            "division",
+            "division_name",
+            "department",
+            "department_name",
+            "session",
+            "session_label",
+            "title",
+            "description",
+            "resource_type",
+            "resource_type_display",
+            "youtube_url",
+            "youtube_video_id",
+            "youtube_embed_url",
+            "file",
+            "file_url",
+            "file_name",
+            "file_size",
+            "is_published",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_file_url(self, obj):
+        if obj.file:
+            return obj.file.url
+        return None
+
+    def get_youtube_video_id(self, obj):
+        return obj.youtube_video_id
+
+    def get_youtube_embed_url(self, obj):
+        if obj.youtube_video_id:
+            return f"https://www.youtube.com/embed/{obj.youtube_video_id}"
+        return None
+
+
+class LearningResourceUploadSerializer(serializers.Serializer):
+    institution = serializers.UUIDField(required=True)
+    division = serializers.UUIDField(required=False, allow_null=True)
+    department = serializers.UUIDField(required=False, allow_null=True)
+    session = serializers.UUIDField(required=False, allow_null=True)
+    title = serializers.CharField(required=True, max_length=255)
+    description = serializers.CharField(required=False, allow_blank=True)
+    resource_type = serializers.ChoiceField(
+        required=True,
+        choices=LearningResourceType.choices,
+    )
+    youtube_url = serializers.URLField(required=False, allow_blank=True, max_length=500)
+    file = serializers.FileField(required=False, allow_null=True)
 
 
 class AIAdvisorQuerySerializer(serializers.Serializer):

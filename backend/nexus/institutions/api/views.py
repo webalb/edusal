@@ -58,6 +58,8 @@ from nexus.institutions.models import (
     AwardLevel,
     SiwesPatternChoice,
     SiwesAcademicImpactChoice,
+    LearningResource,
+    LearningResourceType,
 )
 from ..services.nigerian_curriculum_blueprint import (
     get_master_blueprints,
@@ -97,6 +99,8 @@ from .serializers import (
     InstitutionalDocumentChunkSerializer,
     DocumentSearchQuerySerializer,
     DocumentUploadSerializer,
+    LearningResourceSerializer,
+    LearningResourceUploadSerializer,
     AIAdvisorQuerySerializer,
     InstitutionStaffSerializer,
     StaffAssignmentSerializer,
@@ -905,6 +909,68 @@ class InstitutionalDocumentViewSet(viewsets.ModelViewSet):
             "document": InstitutionalDocumentSerializer(doc).data,
         })
 
+
+
+class LearningResourceViewSet(viewsets.ModelViewSet):
+    """CRUD for institution learning content: YouTube videos and uploaded documents/handouts."""
+
+    queryset = LearningResource.objects.all().select_related("institution", "division", "department", "session")
+    serializer_class = LearningResourceSerializer
+    permission_classes = [AllowAny]
+    lookup_field = "id"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        inst_id = self.request.query_params.get("institution")
+        resource_type = self.request.query_params.get("resource_type")
+        if inst_id:
+            qs = qs.filter(institution_id=inst_id)
+        if resource_type:
+            qs = qs.filter(resource_type=resource_type)
+        return qs
+
+    @action(detail=False, methods=["post"], url_path="upload")
+    def upload_document(self, request):
+        """Uploads a handout/document (PDF, DOCX, PPTX, TXT) and attaches it to a learning resource."""
+        serializer = LearningResourceUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            institution = Institution.objects.get(id=data["institution"])
+        except Institution.DoesNotExist:
+            return Response({"error": "Institution not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        division = AcademicDivision.objects.filter(id=data.get("division")).first() if data.get("division") else None
+        department = Department.objects.filter(id=data.get("department")).first() if data.get("department") else None
+        session = AcademicSession.objects.filter(id=data.get("session")).first() if data.get("session") else None
+
+        file_obj = request.FILES.get("file")
+        if not file_obj:
+            return Response({"error": "A file is required for document resources."}, status=status.HTTP_400_BAD_REQUEST)
+
+        resource = LearningResource.objects.create(
+            institution=institution,
+            division=division,
+            department=department,
+            session=session,
+            title=data["title"],
+            description=data.get("description", ""),
+            resource_type=data["resource_type"],
+            file=file_obj,
+            file_name=file_obj.name,
+            file_size=file_obj.size,
+            is_published=True,
+        )
+
+        return Response(
+            {
+                "status": "ok",
+                "message": "Learning resource uploaded successfully.",
+                "resource": LearningResourceSerializer(resource).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class InstitutionStaffViewSet(viewsets.ModelViewSet):

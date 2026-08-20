@@ -175,6 +175,33 @@ export interface InstitutionalDocument {
   updated_at: string;
 }
 
+export type LearningResourceType = 'VIDEO' | 'DOCUMENT' | 'WORKSHOP';
+
+export interface LearningResource {
+  id: string;
+  institution: string;
+  division?: string;
+  division_name?: string;
+  department?: string;
+  department_name?: string;
+  session?: string;
+  session_label?: string;
+  title: string;
+  description?: string;
+  resource_type: LearningResourceType;
+  resource_type_display?: string;
+  youtube_url?: string;
+  youtube_video_id?: string;
+  youtube_embed_url?: string;
+  file?: string;
+  file_url?: string;
+  file_name?: string;
+  file_size?: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AIAdvisorCitation {
   source_index: number;
   citation_label: string;

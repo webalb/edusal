@@ -1,4 +1,5 @@
 import uuid
+import re
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -1644,6 +1645,89 @@ class LoginOTP(models.Model):
     @property
     def is_expired(self) -> bool:
         return timezone.now() >= self.expires_at
+
+
+class LearningResourceType(models.TextChoices):
+    VIDEO = "VIDEO", "Video (YouTube)"
+    DOCUMENT = "DOCUMENT", "Document / Handout"
+    WORKSHOP = "WORKSHOP", "Workshop / Seminar"
+
+
+_YOUTUBE_ID_RE = re.compile(
+    r"(?:youtube\.com/(?:watch\?v=|embed/|shorts/|live/)|youtu\.be/)([A-Za-z0-9_-]{11})"
+)
+
+
+class LearningResource(models.Model):
+    """Institution-published learning content: YouTube videos and uploaded handouts/documents."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    institution = models.ForeignKey(
+        Institution,
+        on_delete=models.CASCADE,
+        related_name="learning_resources",
+    )
+    division = models.ForeignKey(
+        AcademicDivision,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="learning_resources",
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="learning_resources",
+    )
+    session = models.ForeignKey(
+        AcademicSession,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="learning_resources",
+        help_text="Academic session this resource applies to (e.g. 2025/2026)",
+    )
+    title = models.CharField(max_length=255, help_text="e.g. SIWES Orientation Workshop Recording")
+    description = models.TextField(blank=True)
+    resource_type = models.CharField(
+        max_length=30,
+        choices=LearningResourceType.choices,
+        default=LearningResourceType.DOCUMENT,
+    )
+    youtube_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="YouTube video link (embed and thumbnail are derived from this URL)",
+    )
+    file = models.FileField(
+        upload_to="learning_resources/%Y/%m/",
+        null=True,
+        blank=True,
+        help_text="Uploaded handout, slides, or learning document (PDF, DOCX, PPTX, TXT)",
+    )
+    file_name = models.CharField(max_length=255, blank=True, help_text="Original uploaded filename")
+    file_size = models.PositiveBigIntegerField(default=0, help_text="File size in bytes")
+    is_published = models.BooleanField(default=True, help_text="Visible to students when checked")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Learning Resource"
+        verbose_name_plural = "Learning Resources"
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.get_resource_type_display()})"
+
+    @property
+    def youtube_video_id(self) -> str | None:
+        """Extracts the 11-character YouTube video ID from the stored URL, if any."""
+        if not self.youtube_url:
+            return None
+        match = _YOUTUBE_ID_RE.search(self.youtube_url)
+        return match.group(1) if match else None
 
 
 

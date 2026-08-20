@@ -388,6 +388,88 @@ export const institutionApi = {
     return data.document || data;
   },
 
+  async listLearningResources(
+    institutionId: string,
+    resourceType?: string,
+    token?: string
+  ): Promise<import('../types/institution').LearningResource[]> {
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Token ${token}`;
+
+    const params = new URLSearchParams({ institution: institutionId });
+    if (resourceType) params.set('resource_type', resourceType);
+
+    const res = await fetch(`${API_BASE}/api/learning-resources/?${params.toString()}`, {
+      headers,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to load learning resources`);
+    }
+    return res.json();
+  },
+
+  async createLearningResource(
+    payload: {
+      institution: string;
+      title: string;
+      description?: string;
+      resource_type: string;
+      youtube_url?: string;
+      division?: string;
+      department?: string;
+      session?: string;
+      is_published?: boolean;
+    },
+    token?: string
+  ): Promise<import('../types/institution').LearningResource> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Token ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/learning-resources/`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}: Failed to create resource`);
+    }
+    return res.json();
+  },
+
+  async uploadLearningResourceFile(
+    formData: FormData,
+    token?: string
+  ): Promise<import('../types/institution').LearningResource> {
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Token ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/learning-resources/upload/`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}: Failed to upload resource`);
+    }
+    const data = await res.json();
+    return data.resource || data;
+  },
+
+  async deleteLearningResource(id: string, token?: string): Promise<void> {
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Token ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/learning-resources/${id}/`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to delete resource`);
+    }
+  },
+
   async askAdvisor(
     institutionId: string,
     payload: {

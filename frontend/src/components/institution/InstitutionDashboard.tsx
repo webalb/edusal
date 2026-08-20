@@ -14,6 +14,7 @@ import { InstitutionLogin } from './InstitutionLogin';
 import { GovernancePulse } from './GovernancePulse';
 import { AcademicHierarchyTree } from './AcademicHierarchyTree';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
+import { LearningResourcesManager } from './LearningResourcesManager';
 import { StaffDirectory } from './StaffDirectory';
 import { StudentRoster } from './StudentRoster';
 import { PathwaysManager } from './PathwaysManager';
@@ -50,6 +51,7 @@ import {
   Verified as VerifiedIcon,
   School as GraduationCapIcon,
   Explore as CompassIcon,
+  SmartDisplay as SmartDisplayIcon,
 } from '@mui/icons-material';
 
 interface InstitutionDashboardProps {
@@ -57,12 +59,13 @@ interface InstitutionDashboardProps {
   onBackToLanding: () => void;
 }
 
-type TabKey = 'pulse' | 'tree' | 'kb' | 'staff' | 'students' | 'pathways';
+type TabKey = 'pulse' | 'tree' | 'kb' | 'resources' | 'staff' | 'students' | 'pathways';
 
 const TAB_PATHS: Record<TabKey, string> = {
   pulse: 'governance-pulse',
   tree: 'hierarchy-explorer',
   kb: 'knowledge-base',
+  resources: 'learning-resources',
   students: 'student-roster',
   pathways: 'career-pathways',
   staff: 'staff-evaluators',
@@ -91,6 +94,7 @@ const NavSections: {
     label: 'Resources',
     items: [
       { key: 'kb', label: 'Knowledge Base', icon: MenuBookIcon },
+      { key: 'resources', label: 'Learning Resources', icon: SmartDisplayIcon },
       { key: 'pathways', label: 'Career Pathways', icon: CompassIcon },
     ],
   },
@@ -771,6 +775,18 @@ export const InstitutionDashboard: FC<InstitutionDashboardProps> = ({
                 sessions={sessions}
                 documents={documents}
                 loading={loading}
+                authToken={authToken}
+                onRefresh={() => loadInstitutionData(selectedInst.id)}
+              />
+            )}
+
+            {activeTab === 'resources' && selectedInst && (
+              <LearningResourcesManager
+                institutionId={selectedInst.id}
+                institutionName={selectedInst.name}
+                tierTwoTerm={t2Label}
+                tree={tree}
+                sessions={sessions}
                 authToken={authToken}
                 onRefresh={() => loadInstitutionData(selectedInst.id)}
               />

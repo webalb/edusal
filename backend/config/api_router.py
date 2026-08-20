@@ -9,7 +9,8 @@ from nexus.institutions.api.views import (
     DepartmentViewSet,
     AcademicProgramViewSet,
     AcademicSessionViewSet,
-    InstitutionalDocumentViewSet,
+InstitutionalDocumentViewSet,
+    LearningResourceViewSet,
     InstitutionStaffViewSet,
     StaffAssignmentViewSet,
     StudentProfileViewSet,
@@ -39,6 +40,7 @@ router.register("departments", DepartmentViewSet, basename="department")
 router.register("programs", AcademicProgramViewSet, basename="program")
 router.register("sessions", AcademicSessionViewSet, basename="session")
 router.register("documents", InstitutionalDocumentViewSet, basename="document")
+router.register("learning-resources", LearningResourceViewSet, basename="learning-resource")
 router.register("staff", InstitutionStaffViewSet, basename="staff")
 router.register("staff-assignments", StaffAssignmentViewSet, basename="staff-assignment")
 router.register("students", StudentProfileViewSet, basename="student")
