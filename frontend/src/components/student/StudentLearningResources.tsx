@@ -4,6 +4,10 @@ import { institutionApi } from '../../services/institutionApi';
 import {
   Chip,
   Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from '@mui/material';
 import {
   SmartDisplay as SmartDisplayIcon,
@@ -13,6 +17,8 @@ import {
   Download as DownloadIcon,
   Refresh as RefreshIcon,
   OpenInNew as OpenInNewIcon,
+  PlayCircleFilled as PlayCircleFilledIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { PageHead, LoadingBlock } from '../institution/Shared';
 
@@ -37,6 +43,7 @@ export const StudentLearningResources: FC<StudentLearningResourcesProps> = ({
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('ALL');
+  const [player, setPlayer] = useState<LearningResource | null>(null);
 
   const loadResources = useCallback(async () => {
     setLoading(true);
@@ -122,14 +129,26 @@ export const StudentLearningResources: FC<StudentLearningResourcesProps> = ({
                 className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card"
               >
                 <div className="relative aspect-video bg-black">
-                  <iframe
-                    src={res.youtube_embed_url}
-                    title={res.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
+                  <img
+                    src={`https://i.ytimg.com/vi/${new URL(res.youtube_embed_url).pathname.split('/').pop()}/hqdefault.jpg`}
+                    alt={res.title}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
                   />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <button
+                      type="button"
+                      onClick={() => setPlayer(res)}
+                      className="group flex items-center gap-2 rounded-full bg-white/95 px-5 py-2.5 text-sm font-bold text-charcoal shadow-lg transition-transform hover:scale-105"
+                      aria-label={`Play ${res.title}`}
+                    >
+                      <PlayCircleFilledIcon sx={{ fontSize: 26, color: 'primary.main' }} />
+                      Play
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
@@ -247,6 +266,65 @@ export const StudentLearningResources: FC<StudentLearningResourcesProps> = ({
           )}
         </div>
       )}
+
+      <Dialog
+        open={Boolean(player)}
+        onClose={() => setPlayer(null)}
+        maxWidth="md"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 3,
+              overflow: 'hidden',
+              bgcolor: 'black',
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            bgcolor: '#111827',
+            color: 'white',
+            px: 3,
+            py: 2,
+          }}
+        >
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-bold">{player?.title}</p>
+            <p className="truncate text-xs text-white/60">
+              {player?.resource_type_display || player?.resource_type}
+              {player?.session_label ? ` · ${player.session_label}` : ''}
+            </p>
+          </div>
+          <IconButton onClick={() => setPlayer(null)} sx={{ color: 'white' }} aria-label="Close player">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ bgcolor: 'black', p: 0 }}>
+          {player?.youtube_embed_url && (
+            <div className="aspect-video w-full">
+              <iframe
+                src={player.youtube_embed_url}
+                title={player.title}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          )}
+          {player?.description && (
+            <div className="border-t border-white/10 px-3 py-3">
+              <p className="text-sm leading-relaxed text-white/85">{player.description}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
