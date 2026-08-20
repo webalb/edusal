@@ -34,6 +34,11 @@ const resourceTypes: { value: LearningResourceType; label: string; hint: string 
   { value: 'DOCUMENT', label: 'Document / Handout', hint: 'Upload a PDF, DOCX, PPTX, or TXT file' },
 ];
 
+const compactInputSx = {
+  '& .MuiOutlinedInput-root': { borderRadius: '10px' },
+  '& .MuiOutlinedInput-input': { py: '11px' },
+};
+
 export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> = ({
   isOpen,
   onClose,
@@ -188,6 +193,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
               setResourceType(e.target.value as LearningResourceType);
               setSelectedFile(null);
             }}
+            sx={compactInputSx}
           >
             {resourceTypes.map((t) => (
               <MenuItem key={t.value} value={t.value}>
@@ -207,7 +213,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
                 placeholder="https://www.youtube.com/watch?v=..."
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
-                sx={{ maxWidth: 480 }}
+                sx={{ ...compactInputSx, maxWidth: 480 }}
               />
               <p className="text-xs text-charcoal-faint">
                 The video player and thumbnail are generated automatically from this link
@@ -263,6 +269,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
             placeholder="e.g. SIWES Orientation Workshop Recording"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            sx={compactInputSx}
           />
 
           <TextField
@@ -272,6 +279,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
             placeholder="What will students learn from this resource?"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            sx={compactInputSx}
           />
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -285,6 +293,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
                 setSelectedDivision(e.target.value);
                 setSelectedDepartment('');
               }}
+              sx={compactInputSx}
             >
               <MenuItem value="">Institution-Wide (All Units)</MenuItem>
               {tree?.divisions.map((div) => (
@@ -301,6 +310,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
               disabled={!selectedDivision}
+              sx={compactInputSx}
             >
               <MenuItem value="">All Departments in Unit</MenuItem>
               {availableDepts.map((dept) => (
@@ -316,6 +326,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
               label="Academic Session"
               value={selectedSession}
               onChange={(e) => setSelectedSession(e.target.value)}
+              sx={compactInputSx}
             >
               {sessions.map((s) => (
                 <MenuItem key={s.id} value={s.id}>
