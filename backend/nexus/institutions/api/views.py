@@ -1,5 +1,6 @@
 import hashlib
 from decimal import Decimal
+from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
 from django.contrib.auth import authenticate, get_user_model
@@ -1007,18 +1008,27 @@ class AuthLoginView(APIView):
                 "user": user_data,
             })
 
-        # Staff or platform admin: require an emailed one-time code.
-        otp = issue_login_otp(user)
-        if otp is None:
-            return Response(
-                {"error": "We couldn't email your secure code. Please try again."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
+        # Staff or platform admin: require an emailed one-time code unless
+        # OTP login is disabled (e.g. local development).
+        if settings.OTP_LOGIN_ENABLED:
+            otp = issue_login_otp(user)
+            if otp is None:
+                return Response(
+                    {"error": "We couldn't email your secure code. Please try again."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+            return Response({
+                "requires_otp": True,
+                "email": mask_email(user.email),
+                "resend_after": 30,
+                "expires_in": OTP_LIFETIME_SECONDS,
+            })
+
+        token, _ = Token.objects.get_or_create(user=user)
+        user_data = AuthUserSerializer(user).data
         return Response({
-            "requires_otp": True,
-            "email": mask_email(user.email),
-            "resend_after": 30,
-            "expires_in": OTP_LIFETIME_SECONDS,
+            "token": token.key,
+            "user": user_data,
         })
 
 

@@ -20,6 +20,10 @@ if READ_DOT_ENV_FILE:
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
+
+# When enabled, staff and platform admins must enter a one-time code emailed
+# to them before receiving a token on sign-in. Disable in local development.
+OTP_LOGIN_ENABLED = env.bool("DJANGO_OTP_LOGIN_ENABLED", True)
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.

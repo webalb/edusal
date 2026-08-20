@@ -7,6 +7,10 @@ from .base import env
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
+
+# Local development: skip the emailed one-time code on sign-in so testing is
+# frictionless. Production keeps OTP login enabled.
+OTP_LOGIN_ENABLED = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
