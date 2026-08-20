@@ -7,6 +7,7 @@ import { StudentRoadmapTimeline } from './StudentRoadmapTimeline';
 import { AssessmentCatalog } from './AssessmentCatalog';
 import { AICareerCoachChat } from './AICareerCoachChat';
 import { CounsellingSessionsTab } from './CounsellingSessionsTab';
+import { StudentLearningResources } from './StudentLearningResources';
 import { DashboardTheme, PageHead, Panel, StatCard, Badge, LoadingBlock } from '../institution/Shared';
 import { Chip, Drawer, IconButton, Tooltip } from '@mui/material';
 import {
@@ -25,6 +26,7 @@ import {
   Psychology as PsychologyIcon,
   AutoAwesome as AutoAwesomeIcon,
   SupportAgent as SupportAgentIcon,
+  SmartDisplay as SmartDisplayIcon,
 } from '@mui/icons-material';
 
 interface StudentDashboardProps {
@@ -33,7 +35,7 @@ interface StudentDashboardProps {
   onLogout: () => void;
 }
 
-type TabKey = 'overview' | 'employability' | 'roadmap' | 'diagnostics' | 'ai_coach' | 'counselling';
+type TabKey = 'overview' | 'employability' | 'roadmap' | 'diagnostics' | 'ai_coach' | 'counselling' | 'resources';
 
 const TAB_PATHS: Record<TabKey, string> = {
   overview: 'overview',
@@ -42,6 +44,7 @@ const TAB_PATHS: Record<TabKey, string> = {
   diagnostics: 'diagnostics',
   ai_coach: 'ai-career-coach',
   counselling: 'counselling',
+  resources: 'learning-resources',
 };
 
 const PATH_TO_TAB: Record<string, TabKey> = Object.fromEntries(
@@ -70,6 +73,10 @@ const NavSections: {
       { key: 'ai_coach', label: 'AI Career Coach', icon: AutoAwesomeIcon },
       { key: 'counselling', label: 'Counsellor Sessions', icon: SupportAgentIcon },
     ],
+  },
+  {
+    label: 'Learning',
+    items: [{ key: 'resources', label: 'Learning Resources', icon: SmartDisplayIcon }],
   },
 ];
 
@@ -471,6 +478,13 @@ export const StudentDashboard: FC<StudentDashboardProps> = ({
                 {activeTab === 'counselling' && (
                   <CounsellingSessionsTab
                     studentProfile={data.profile}
+                    authToken={authToken}
+                  />
+                )}
+
+                {activeTab === 'resources' && (
+                  <StudentLearningResources
+                    institutionId={data.profile.institution}
                     authToken={authToken}
                   />
                 )}
