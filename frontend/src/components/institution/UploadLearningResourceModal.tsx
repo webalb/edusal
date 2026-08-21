@@ -201,7 +201,7 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
               </MenuItem>
             ))}
           </TextField>
-
+          <br /><br />
           {needsYoutube && (
             <div className="flex flex-col items-center justify-center gap-2 rounded-[15px] border-2 border-dashed border-border-strong bg-bgsoft px-6 py-6 text-center">
               <VideoLibraryIcon sx={{ fontSize: 30, color: youtubeUrl ? 'primary.main' : 'charcoal.faint' }} />
@@ -267,11 +267,12 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
             label="Resource Title"
             required
             placeholder="e.g. SIWES Orientation Workshop Recording"
+          
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             sx={compactInputSx}
           />
-
+          <br /><br />
           <TextField
             fullWidth
             size="medium"
@@ -281,6 +282,8 @@ export const UploadLearningResourceModal: FC<UploadLearningResourceModalProps> =
             onChange={(e) => setDescription(e.target.value)}
             sx={compactInputSx}
           />
+
+          <br /><br />
 
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField
